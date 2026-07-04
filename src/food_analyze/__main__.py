@@ -27,8 +27,7 @@
 排序：
     1. 净碳水最低
     2. 月成本最低
-    3. 总碳水最低
-    4. 脂肪最高
+    3. 脂肪最高
 """
 
 from dataclasses import dataclass
@@ -221,7 +220,6 @@ def optimize(weight, target_kcal):
         key=lambda x: (
             x["net"],
             x["month_cost"],
-            x["carb"],
             -x["fat"],
         )
     )
@@ -239,10 +237,8 @@ def print_results(results):
     table.add_column("排名", justify="right")
     table.add_column("大豆(g)", justify="right")
     table.add_column("坚果(包)", justify="right")
-    table.add_column("坚果(g)", justify="right")
     table.add_column("热量", justify="right")
     table.add_column("有效蛋白", justify="right")
-    table.add_column("总碳水", justify="right")
     table.add_column("净碳水", justify="right")
     table.add_column("膳食纤维", justify="right")
     table.add_column("脂肪", justify="right")
@@ -256,10 +252,8 @@ def print_results(results):
             str(i),
             f"{r['soy']:.0f}",
             str(r["packets"]),
-            f"{r['nut_g']:.1f}",
             f"{r['kcal']:.1f}",
             f"{r['effective']:.1f}",
-            f"{r['carb']:.1f}",
             f"{r['net']:.1f}",
             f"{r['fiber']:.1f}",
             f"{r['fat']:.1f}",
@@ -279,7 +273,6 @@ def print_results(results):
     console.print()
     console.print(f"热量：{best['kcal']:.1f} kcal")
     console.print(f"有效蛋白：{best['effective']:.1f} g")
-    console.print(f"总碳水：{best['carb']:.1f} g")
     console.print(f"净碳水：{best['net']:.1f} g")
     console.print(f"膳食纤维：{best['fiber']:.1f} g")
     console.print(f"脂肪：{best['fat']:.1f} g")

@@ -4,9 +4,7 @@ version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
-dependencies = [
-    "rich>=15.0.0",
-]
+dependencies = ["rich>=15.0.0", "questionary>=2.1.0"]
 
 [tool.uv]
 package = true
@@ -21,4 +19,3 @@ food-analyze = "food_analyze.__main__:main"
 [build-system]
 requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
-

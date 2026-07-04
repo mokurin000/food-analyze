@@ -7,8 +7,10 @@
 从 __init__ 导入核心逻辑并启动交互式 CLI。
 """
 
+import questionary
+from rich.prompt import FloatPrompt, IntPrompt
+
 from food_analyze import console, optimize, print_results
-from rich.prompt import FloatPrompt, IntPrompt, Prompt
 
 
 ACTIVITY_LEVELS = {
@@ -40,18 +42,21 @@ ACTIVITY_TIPS = {
 def calculate_bmr(weight: float, height: float, age: int, gender: str) -> float:
     """Mifflin-St Jeor Equation 计算基础代谢率"""
     base = 10 * weight + 6.25 * height - 5 * age
-    return base + 5 if gender == "男性" else base - 161
+    return base + 5 if gender == "男" else base - 161
 
 
 def prompt_activity_level() -> tuple[str, float]:
     """选择活动量等级并返回 (名称, 系数)"""
+
     console.print("\n[bold]选择活动量等级（TDEE 估算用）[/bold]")
     for name, desc in ACTIVITY_DESCRIPTIONS.items():
         mult = ACTIVITY_LEVELS[name]
         tip = ACTIVITY_TIPS[name]
         console.print(f"  {name} × {mult} — {desc}")
         console.print(f"    [dim]💡 {tip}[/dim]")
-    choice = Prompt.ask("活动量等级", choices=list(ACTIVITY_LEVELS.keys()))
+    choice = questionary.select(
+        "活动量等级", choices=list(ACTIVITY_LEVELS.keys())
+    ).ask()
     return choice, ACTIVITY_LEVELS[choice]
 
 
@@ -60,13 +65,15 @@ def main():
 
     weight = FloatPrompt.ask("请输入体重(kg)")
 
-    text = Prompt.ask("目标热量(kcal，默认计算)", default="").strip()
+    text = questionary.text("目标热量(kcal，默认计算)", default="").ask().strip()
 
     if text == "":
         height = FloatPrompt.ask("请输入身高(cm)")
         age = IntPrompt.ask("请输入年龄")
-        console.print("选择性别（以近半年激素水平为准，睾丸癌等情况请选「女」）")
-        gender = Prompt.ask("  男/女", choices=["男", "女"])
+        console.print(
+            "选择性别（以近半年激素水平为准，睾丸切除、MtF HRT等情况请选「女」）"
+        )
+        gender = questionary.select("  男/女", choices=["男", "女"]).ask()
         bmr = calculate_bmr(weight, height, age, gender)
         console.print(f"[dim]基础代谢率(BMR)：{bmr:.0f} kcal[/dim]")
         level_name, level_mult = prompt_activity_level()

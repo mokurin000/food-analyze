@@ -72,7 +72,7 @@ OAT = Food(
     carb=54,
     fiber=9,
     net_carb=45,
-    price_per_g=0.008,
+    price_per_g=17.09 / 2500,
     digestibility=0.70,
 )
 

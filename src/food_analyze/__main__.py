@@ -80,8 +80,20 @@ def main():
         target = bmr * level_mult
         console.print(
             f"[dim]总热量消耗(TDEE)：{bmr:.0f} × {level_mult} ({level_name})"
-            f" = {target:.0f} kcal[/dim]\n"
+            f" = {target:.0f} kcal[/dim]"
         )
+        if questionary.confirm("是否有减肥计划？", default=False).ask():
+            deficit = IntPrompt.ask(
+                "热量缺口百分比 (10~25)",
+                default=15,
+                choices=list(map(str, range(10, 26))),
+                show_choices=False,
+            )
+            target *= 1 - deficit / 100
+            console.print(
+                f"[dim]减脂目标热量：{target:.0f} kcal（缺口 {deficit}%）[/dim]"
+            )
+        console.print()
     else:
         target = float(text)
 

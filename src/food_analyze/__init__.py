@@ -158,15 +158,8 @@ def optimize(weight, target_kcal, more_protein: bool):
 
             if protein > weight * PROTEIN_FACTOR_TOO_MUCH:
                 continue
-            elif protein > weight * PROTEIN_FACTOR_RECOMMENDED:
-                # TODO:
-                # 1. In the returned dictionary, just make a flag used in below
-                # 2. In `print_results`, if any such plan found, warn users that
-                # taking too much proteins may increase presure to their kidney.
-                # Because effective protein is not the value to judge threshold,
-                # make a new column to place flag ('*' or ' '), and a warning msg
-                # below when needed.
-                pass
+
+            high_protein = protein > weight * PROTEIN_FACTOR_RECOMMENDED
 
             fat = oat["fat"] + soy["fat"] + nut["fat"]
 
@@ -188,6 +181,7 @@ def optimize(weight, target_kcal, more_protein: bool):
                     "kcal": kcal,
                     "protein": protein,
                     "effective": effective,
+                    "high_protein": high_protein,
                     "fat": fat,
                     "fiber": fiber,
                     "net": net,
@@ -233,7 +227,9 @@ def print_results(results):
             f"{r['soy']:.0f}",
             str(r["packets"]),
             f"{r['kcal']:.1f}",
-            f"{r['effective']:.1f}",
+            f"[underline]{r['effective']:.1f}[/underline]"
+            if r["high_protein"]
+            else f"{r['effective']:.1f}",
             f"{r['net']:.1f}",
             f"{r['fiber']:.1f}",
             f"{r['fat']:.1f}",
@@ -242,6 +238,12 @@ def print_results(results):
         )
 
     console.print(table)
+
+    if any(r["high_protein"] for r in results[:show]):
+        console.print(
+            "\n[bold yellow]⚠ 部分方案总蛋白质摄入量较高（>2.2 g/kg），"
+            "长期过量摄入蛋白质可能增加肾脏负担，请谨慎选择。[/bold yellow]"
+        )
 
     best = results[0]
 

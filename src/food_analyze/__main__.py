@@ -67,7 +67,7 @@ def main():
     height = FloatPrompt.ask("请输入身高(cm)")
     weight = FloatPrompt.ask("请输入体重(kg)")
 
-    if weight / height**2 >= 30:
+    if weight / (height / 100) ** 2 >= 30:
         console.print(
             "\n[bold yellow]⚠ 您的体重过高，建议遵医嘱营养学指导，"
             "TDEE与有效蛋白需求量估算公式将会失效。[/bold yellow]"

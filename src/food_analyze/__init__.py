@@ -133,11 +133,11 @@ def optimize(weight, target_kcal, more_protein: bool):
 
     results = []
 
-    for packets in range(21):
+    for packets in range(101):
         nut_grams = packets * NUT_PACKET_WEIGHT
         nut = nutrient(NUT, nut_grams)
 
-        for soy_g in range(0, 601, 5):
+        for soy_g in range(0, 1001, 5):
             soy = nutrient(SOY, soy_g)
 
             kcal = oat["kcal"] + soy["kcal"] + nut["kcal"]
@@ -227,11 +227,16 @@ def print_results(results):
             f"{r['soy']:.0f}",
             str(r["packets"]),
             f"{r['kcal']:.1f}",
+            # protein
             f"[underline]{r['effective']:.1f}[/underline]"
             if r["high_protein"]
             else f"{r['effective']:.1f}",
+            # net carb
             f"{r['net']:.1f}",
-            f"{r['fiber']:.1f}",
+            # fiber
+            f"[underline]{r['fiber']:.1f}[/underline]"
+            if r["fiber"] > 70.0
+            else f"{r['fiber']:.1f}",
             f"{r['fat']:.1f}",
             f"{r['day_cost']:.2f}",
             f"{r['month_cost']:.2f}",
@@ -241,7 +246,7 @@ def print_results(results):
 
     if any(r["high_protein"] for r in results[:show]):
         console.print(
-            "\n[bold yellow]⚠ 部分方案总蛋白质摄入量较高（>2.2 g/kg），"
+            f"\n[bold yellow]⚠ 部分方案总蛋白质摄入量较高（>{PROTEIN_FACTOR_RECOMMENDED} g/kg），"
             "长期过量摄入蛋白质可能增加肾脏负担，请谨慎选择。[/bold yellow]"
         )
 

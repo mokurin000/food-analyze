@@ -67,6 +67,12 @@ def main():
     height = FloatPrompt.ask("请输入身高(cm)")
     weight = FloatPrompt.ask("请输入体重(kg)")
 
+    if weight / height**2 >= 30:
+        console.print(
+            "\n[bold yellow]⚠ 您的体重过高，建议遵医嘱营养学指导，"
+            "TDEE与有效蛋白需求量估算公式将会失效。[/bold yellow]"
+        )
+
     console.print("选择性别（以近半年激素水平为准，睾丸切除、MtF HRT等情况请选「女」）")
     gender = questionary.select("  男/女", choices=["男", "女"]).ask()
 

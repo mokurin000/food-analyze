@@ -24,6 +24,16 @@ KCAL_TOLERANCE = 15
 # 5.57 南京同仁堂
 VITAMIN_COST = 5.57 / 50
 
+## Protein gram/kg
+# 非减脂期
+PROTEIN_FACTOR_NORMAL = 0.8
+# 减脂期、运动、老年人
+PROTEIN_FACTOR_MORE_PROTEIN = 1.2
+# 力量训练、增肌
+PROTEIN_FACTOR_RECOMMENDED = 2.2
+# 蛋白质建议上限
+PROTEIN_FACTOR_TOO_MUCH = 3.0
+
 # =========================
 # 食物数据
 # =========================
@@ -113,8 +123,11 @@ def nutrient(food: Food, grams: float):
     }
 
 
-def optimize(weight, target_kcal):
-    target_effective_protein = weight
+def optimize(weight, target_kcal, more_protein: bool):
+    if more_protein:
+        target_effective_protein = weight * PROTEIN_FACTOR_MORE_PROTEIN
+    else:
+        target_effective_protein = weight * PROTEIN_FACTOR_NORMAL
 
     oat = nutrient(OAT, OAT_GRAMS)
 
@@ -142,6 +155,18 @@ def optimize(weight, target_kcal):
                 continue
 
             protein = oat["protein"] + soy["protein"] + nut["protein"]
+
+            if protein > weight * PROTEIN_FACTOR_TOO_MUCH:
+                continue
+            elif protein > weight * PROTEIN_FACTOR_RECOMMENDED:
+                # TODO:
+                # 1. In the returned dictionary, just make a flag used in below
+                # 2. In `print_results`, if any such plan found, warn users that
+                # taking too much proteins may increase presure to their kidney.
+                # Because effective protein is not the value to judge threshold,
+                # make a new column to place flag ('*' or ' '), and a warning msg
+                # below when needed.
+                pass
 
             fat = oat["fat"] + soy["fat"] + nut["fat"]
 

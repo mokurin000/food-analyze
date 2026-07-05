@@ -63,41 +63,37 @@ def prompt_activity_level() -> tuple[str, float]:
 def main():
     console.print("[bold]每日饮食优化器[/bold]\n")
 
+    age = IntPrompt.ask("请输入年龄")
+    height = FloatPrompt.ask("请输入身高(cm)")
     weight = FloatPrompt.ask("请输入体重(kg)")
 
-    text = questionary.text("目标热量(kcal，默认计算)", default="").ask().strip()
+    console.print("选择性别（以近半年激素水平为准，睾丸切除、MtF HRT等情况请选「女」）")
+    gender = questionary.select("  男/女", choices=["男", "女"]).ask()
 
-    if text == "":
-        height = FloatPrompt.ask("请输入身高(cm)")
-        age = IntPrompt.ask("请输入年龄")
-        console.print(
-            "选择性别（以近半年激素水平为准，睾丸切除、MtF HRT等情况请选「女」）"
-        )
-        gender = questionary.select("  男/女", choices=["男", "女"]).ask()
-        bmr = calculate_bmr(weight, height, age, gender)
-        console.print(f"[dim]基础代谢率(BMR)：{bmr:.0f} kcal[/dim]")
-        level_name, level_mult = prompt_activity_level()
-        target = bmr * level_mult
-        console.print(
-            f"[dim]总热量消耗(TDEE)：{bmr:.0f} × {level_mult} ({level_name})"
-            f" = {target:.0f} kcal[/dim]"
-        )
-        if questionary.confirm("是否有减肥计划？", default=False).ask():
-            deficit = IntPrompt.ask(
-                "热量缺口百分比 (10~25)",
-                default=15,
-                choices=list(map(str, range(10, 26))),
-                show_choices=False,
-            )
-            target *= 1 - deficit / 100
-            console.print(
-                f"[dim]减脂目标热量：{target:.0f} kcal（缺口 {deficit}%）[/dim]"
-            )
-        console.print()
-    else:
-        target = float(text)
+    bmr = calculate_bmr(weight, height, age, gender)
+    console.print(f"[dim]基础代谢率(BMR)：{bmr:.0f} kcal[/dim]")
+    level_name, level_mult = prompt_activity_level()
+    target = bmr * level_mult
+    console.print(
+        f"[dim]总热量消耗(TDEE)：{bmr:.0f} × {level_mult} ({level_name})"
+        f" = {target:.0f} kcal[/dim]"
+    )
 
-    results = optimize(weight, target)
+    is_loss_weight = questionary.confirm("是否有减肥计划？", default=False).ask()
+
+    if is_loss_weight:
+        deficit = IntPrompt.ask(
+            "热量缺口百分比 (10~25)",
+            default=15,
+            choices=list(map(str, range(10, 26))),
+            show_choices=False,
+        )
+        target *= 1 - deficit / 100
+        console.print(f"[dim]减脂目标热量：{target:.0f} kcal（缺口 {deficit}%）[/dim]")
+    console.print()
+
+    is_elder = age >= 65
+    results = optimize(weight, target, is_loss_weight or is_elder)
 
     print_results(results)
 

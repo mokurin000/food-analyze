@@ -255,8 +255,8 @@ def print_results(results):
     console.print("\n[bold green]最佳方案[/bold green]\n")
 
     console.print(f"燕麦：{OAT_GRAMS} g（固定）")
-    console.print(f"大豆：{best['soy']:.0f} g")
     console.print(f"坚果：{best['packets']} 包 ({best['nut_g']:.1f} g)")
+    console.print(f"大豆组织蛋白：{best['soy']:.0f} g")
     console.print()
     console.print(f"热量：{best['kcal']:.1f} kcal")
     console.print(f"有效蛋白：{best['effective']:.1f} g")

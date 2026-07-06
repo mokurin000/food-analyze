@@ -51,8 +51,11 @@ class Food:
     net_carb: float
     """净碳水"""
 
-    price_per_g: float
     digestibility: float
+    """Biological Value"""
+
+    price_per_g: float
+    """每克重平均核算价格"""
 
 
 # -------------------------
@@ -85,6 +88,21 @@ SOY = Food(
     fiber=17,
     net_carb=17,
     price_per_g=165 / 20000,
+    digestibility=0.74,
+)
+
+# -------------------------
+# 大豆分离蛋白 - 1688
+# 山松科技大豆分离蛋白20kg
+# -------------------------
+
+SPI = Food(
+    kcal=338,
+    protein=90,
+    fat=3.39,
+    fiber=0,
+    net_carb=7.36,
+    price_per_g=398 / 20000,
     digestibility=0.74,
 )
 
@@ -123,7 +141,14 @@ def nutrient(food: Food, grams: float):
     }
 
 
-def optimize(weight, target_kcal, more_protein: bool):
+def optimize(
+    weight,
+    target_kcal,
+    more_protein: bool,
+    soy_food: Food = SOY,
+    soy_label: str = "组织",
+    soy_food_max: int = 1000,
+):
     if more_protein:
         target_effective_protein = weight * PROTEIN_FACTOR_MORE_PROTEIN
     else:
@@ -137,8 +162,8 @@ def optimize(weight, target_kcal, more_protein: bool):
         nut_grams = packets * NUT_PACKET_WEIGHT
         nut = nutrient(NUT, nut_grams)
 
-        for soy_g in range(0, 1001, 5):
-            soy = nutrient(SOY, soy_g)
+        for soy_g in range(0, soy_food_max + 1, 5):
+            soy = nutrient(soy_food, soy_g)
 
             kcal = oat["kcal"] + soy["kcal"] + nut["kcal"]
 
@@ -176,6 +201,7 @@ def optimize(weight, target_kcal, more_protein: bool):
             results.append(
                 {
                     "soy": soy_g,
+                    "soy_type": soy_label,
                     "packets": packets,
                     "nut_g": nut_grams,
                     "kcal": kcal,
@@ -190,14 +216,6 @@ def optimize(weight, target_kcal, more_protein: bool):
                 }
             )
 
-    results.sort(
-        key=lambda x: (
-            x["net"],
-            x["month_cost"],
-            -x["fat"],
-        )
-    )
-
     return results
 
 
@@ -209,6 +227,7 @@ def print_results(results):
     table = Table(title="饮食优化结果")
 
     table.add_column("排名", justify="right")
+    table.add_column("豆蛋白", justify="center")
     table.add_column("大豆(g)", justify="right")
     table.add_column("坚果(包)", justify="right")
     table.add_column("热量", justify="right")
@@ -224,6 +243,7 @@ def print_results(results):
     for i, r in enumerate(results[:show], 1):
         table.add_row(
             str(i),
+            r["soy_type"],
             f"{r['soy']:.0f}",
             str(r["packets"]),
             f"{r['kcal']:.1f}",
@@ -256,7 +276,10 @@ def print_results(results):
 
     console.print(f"燕麦：{OAT_GRAMS} g（固定）")
     console.print(f"坚果：{best['packets']} 包 ({best['nut_g']:.1f} g)")
-    console.print(f"大豆组织蛋白：{best['soy']:.0f} g")
+    soy_label_map = {"组织": "大豆组织蛋白", "分离": "大豆分离蛋白"}
+    console.print(
+        f"{soy_label_map.get(best['soy_type'], '大豆蛋白')}：{best['soy']:.0f} g"
+    )
     console.print()
     console.print(f"热量：{best['kcal']:.1f} kcal")
     console.print(f"有效蛋白：{best['effective']:.1f} g")

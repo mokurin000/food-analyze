@@ -11,6 +11,7 @@ import questionary
 from rich.prompt import FloatPrompt, IntPrompt
 
 from food_analyze import console, optimize, print_results
+from food_analyze import SOY, SPI
 
 
 ACTIVITY_LEVELS = {
@@ -99,7 +100,36 @@ def main():
     console.print()
 
     is_elder = age >= 65
-    results = optimize(weight, target, is_loss_weight or is_elder)
+    more_protein = is_loss_weight or is_elder
+
+    results_tsp = optimize(
+        weight,
+        target,
+        more_protein,
+        soy_food=SOY,
+        soy_label="组织",
+        soy_food_max=1000,
+    )
+    results_spi = optimize(
+        weight,
+        target,
+        more_protein,
+        soy_food=SPI,
+        soy_label="分离",
+        soy_food_max=500,
+    )
+
+    results = results_tsp + results_spi
+
+    results.sort(
+        key=lambda x: (
+            # decrease weight if too much protein / fiber
+            x["high_protein"] or x["fiber"] > 70.0,
+            x["net"],
+            x["month_cost"],
+            -x["fat"],
+        )
+    )
 
     print_results(results)
 
